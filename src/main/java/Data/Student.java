@@ -29,6 +29,12 @@ public class Student {
         this.id = id;
     }
 
+    public boolean equals(Student student){
+        if (SameName(student.getName()) && student.getId() == this.id)
+            return true;
+        return false;
+    }
+
     public boolean SameName(String name){
         return this.name.equals(name);
     }

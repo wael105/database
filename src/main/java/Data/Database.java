@@ -2,31 +2,31 @@ package Data;
 
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonStreamParser;
 
 
 import java.io.*;
 
 public class Database {
-    private String PATH = "D:\\savedata\\";
+    private static final String PATH = "D:\\savedata\\data.json";
+    private static final File file = new File(PATH);
+    private static final Gson gson = new GsonBuilder().create();
 
-
-    public void Insert(Student student){
-        createFile(student);
+    public void insert(Student student){
+    if (exists(student)) System.out.println("Student exists");
+    else toFile(student);
     }
 
-    private void createFile(Student student){
-        File file = new File("D:\\savedata\\"+student.getId()+".json");
-
-        if(file.exists()){
-            System.out.println("File Exists!");
-            return;
-        }
-        toFile(file, student);
+    private boolean exists(Student student){
+        if(search(student.getId()) != null)
+            return true;
+        return false;
     }
 
-    private void toFile(File file, Student student){
-        Gson gson = new Gson();
-        try(BufferedWriter write = new BufferedWriter(new FileWriter(file))){
+    private void toFile(Student student){
+        try(BufferedWriter write = new BufferedWriter(new FileWriter(file,true))){
             gson.toJson(student, write);
         } catch (IOException e){
             System.out.println(e);
@@ -34,24 +34,29 @@ public class Database {
     }
 
 
-    public Student Search(int id){
+    public Student search(int id) {
         return fromFile(id);
     }
 
-    private Student fromFile(int id){
-        Gson gson = new Gson();
-        Student student = null;
-        try(BufferedReader read = new BufferedReader(new FileReader("D:\\savedata\\"+id+".json"))){
-            student = gson.fromJson(read, Student.class);
-        } catch (IOException e){
+    private Student fromFile(int id) {
+        Student s = null;
+        try{
+            Reader r = new BufferedReader(new FileReader(PATH));
+            JsonStreamParser p = new JsonStreamParser(r);
+            while (p.hasNext()) {
+                JsonElement e = p.next();
+                s = gson.fromJson(e, Student.class);
+                if(s.getId() == id)
+                    return s;
+            }
+        } catch (Exception e){
             System.out.println(e);
         }
-
-        return student;
+        return s;
     }
 
 //TODO MUST CHANGE
-    public void Update(int id, Student student){
+    public void update(int id, Student student){
         editFile(id, student);
     }
 
@@ -76,17 +81,16 @@ public class Database {
         if (!success) {
             System.out.println("File was not successfully renamed");
         }
-        toFile(newFile, student);
+        //toFile(newFile, student);
 
     }
 
     //TODO make it user input
-    public void Delete(int id){
-        DeleteFile(id);
+    public void delete(int id){
+        deleteFile(id);
     }
 
-    private void DeleteFile(int id){
-        File file = new File("D:\\savedata\\"+id+".json");
+    private void deleteFile(int id){
         if(file.delete()) {
             System.out.println("File deleted successfully");
         }

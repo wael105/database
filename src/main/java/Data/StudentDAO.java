@@ -6,16 +6,16 @@ public class StudentDAO {
     private static final Cache<Integer, Student> cache = new Cache<>(10);
     private final Database database = new Database();
 
-    public synchronized void Insert(Student student){
-        database.Insert(student);
+    public synchronized void insert(Student student){
+        database.insert(student);
     }
 
 
-    public Student Search(int id){
+    public Student search(int id) {
         Student student = cache.get(id);
         if(student != null)
             return student;
-        student = database.Search(id);
+        student = database.search(id);
         if (student != null) {
             cache.put(student.getId(), student);
         }
@@ -23,17 +23,17 @@ public class StudentDAO {
     }
 
 
-    public synchronized void Update(int id, Student student){
-        Student student1 = Search(id);
+    public synchronized void update(int id, Student student) {
+        Student student1 = search(id);
         student1.setID(student.getId());
         student1.setName(student.getName());
-        database.Update(id, student1);
+        database.update(id, student1);
     }
 
 
-    public synchronized void Delete(int id){
+    public synchronized void delete(int id){
         cache.delete(id);
-        database.Delete(id);
+        database.delete(id);
     }
 
 }
