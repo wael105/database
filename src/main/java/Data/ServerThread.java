@@ -3,7 +3,6 @@ package Data;
 import java.io.*;
 import java.net.*;
 import java.util.Date;
-import java.io.*;
 
 public class ServerThread extends Thread{
 

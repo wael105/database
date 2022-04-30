@@ -1,101 +1,63 @@
 package Data;
 
+import com.fasterxml.jackson.databind.JsonNode;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonStreamParser;
-
-
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
 
 public class Database {
-    private static final String PATH = "D:\\savedata\\data.json";
-    private static final File file = new File(PATH);
-    private static final Gson gson = new GsonBuilder().create();
+    private static final Database database = new Database();
+    private Jmanager jmanager;
+    private JsonCollection currentCollection;
 
-    public void insert(Student student){
-    if (exists(student)) System.out.println("Student exists");
-    else toFile(student);
+    private Database() {
+        jmanager = new Jmanager();
     }
 
-    private boolean exists(Student student){
-        if(search(student.getId()) != null)
-            return true;
-        return false;
+    public static Database getDatabase() {
+        return database;
     }
 
-    private void toFile(Student student){
-        try(BufferedWriter write = new BufferedWriter(new FileWriter(file,true))){
-            gson.toJson(student, write);
-        } catch (IOException e){
-            System.out.println(e);
-        }
+    public void addCollection(String name) throws IOException {
+        JsonCollection collection = new JsonCollection(name);
+        currentCollection = collection;
+        jmanager.add(collection);
+
+        commit();
     }
 
-
-    public Student search(int id) {
-        return fromFile(id);
+    public void selectCollection(String name){
+        jmanager.setCollection(name);
+        currentCollection = jmanager.getCollection();
     }
 
-    private Student fromFile(int id) {
-        Student s = null;
+    public void insertJson(String json) throws IOException {
+        currentCollection.insert(json);
+        commit();
+    }
+
+    public List<JsonNode> get(String property, String attribute) {
+        return currentCollection.get(property, attribute);
+    }
+
+    public void makeIndex(String property) throws IOException {
+        currentCollection.makeIndex(property);
+        commit();
+    }
+
+    private void commit() throws IOException {
+        Disk.save(jmanager, "D:\\savedata\\data.json");
+    }
+
+    protected void loadData(){
+        File file = new File("D:\\savedata\\data.json");
         try{
-            Reader r = new BufferedReader(new FileReader(PATH));
-            JsonStreamParser p = new JsonStreamParser(r);
-            while (p.hasNext()) {
-                JsonElement e = p.next();
-                s = gson.fromJson(e, Student.class);
-                if(s.getId() == id)
-                    return s;
-            }
+            if(file.exists())
+                jmanager = Disk.load(file);
         } catch (Exception e){
-            System.out.println(e);
-        }
-        return s;
-    }
-
-//TODO MUST CHANGE
-    public void update(int id, Student student){
-        editFile(id, student);
-    }
-
-    //I think i can clean this more
-    private void editFile(int id, Student student){
-        File oldFile = new File("D:\\savedata\\"+id+".json");
-
-        if(!oldFile.exists()){
-            System.out.println("File Does Not Exist!");
-            return ;
-        }
-
-        File newFile = new File("D:\\savedata\\"+student.getId()+".json");
-
-        if (newFile.exists()){
-            System.out.println("A File with the same ID already exists!");
-            return ;
-        }
-
-        boolean success = oldFile.renameTo(newFile);
-
-        if (!success) {
-            System.out.println("File was not successfully renamed");
-        }
-        //toFile(newFile, student);
-
-    }
-
-    //TODO make it user input
-    public void delete(int id){
-        deleteFile(id);
-    }
-
-    private void deleteFile(int id){
-        if(file.delete()) {
-            System.out.println("File deleted successfully");
-        }
-        else {
-            System.out.println("Failed to delete the file");
+            e.printStackTrace();
         }
     }
+
 }

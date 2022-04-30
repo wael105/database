@@ -1,27 +1,73 @@
 package Data;
 
 
-import java.io.FileNotFoundException;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class Service {
-    private final StudentDAO s = new StudentDAO();
-
-
-    public void Insert(Student student){
-
-        s.insert(student);
+    public final Database database;
+    public Service(){
+        database = Database.getDatabase();
+        database.loadData();
     }
 
-    public Student Search(int id) throws FileNotFoundException {
-        return s.search(id);
+    public void Insert(){
+        System.out.println("json:");
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            String json = bufferedReader.readLine();
+            database.insertJson(json);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void Update(int id, Student student) throws FileNotFoundException {
-        s.update(id, student);
+    public void search(){
+        System.out.println("Property:");
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            String property = bufferedReader.readLine();
+            System.out.println("Attribute:");
+            String attribute = bufferedReader.readLine();
+            System.out.println(database.get(property, attribute));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void Delete(int id){
-        s.delete(id);
+    public void setCollection(){
+        System.out.println("Name:");
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            String name = bufferedReader.readLine();
+            database.selectCollection(name);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
+
+    public void makeIndex(){
+        System.out.println("Property:");
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            String property = bufferedReader.readLine();
+            database.makeIndex(property);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addCollection(){
+        System.out.println("Name:");
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            String name = bufferedReader.readLine();
+            database.addCollection(name);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
 
